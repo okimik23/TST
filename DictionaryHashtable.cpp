@@ -7,11 +7,24 @@ DictionaryHashtable::DictionaryHashtable(){}
 /* Insert a word into the dictionary. */
 bool DictionaryHashtable::insert(std::string word)
 {
+	if( find(word) ) {
+		return false;
+	}
+
+	dictionary_h.insert(word);
+	return true;
+	
 }
 
 /* Return true if word is in the dictionary, and false otherwise */
 bool DictionaryHashtable::find(std::string word) const
 {
+
+	if( dictionary_h.find(word) != dictionary_h.end() ) {
+		return true;
+	}
+	
+	return false;
 }
 
 /* Destructor */

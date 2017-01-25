@@ -23,8 +23,10 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
   }
   
   index = 0; //the char in the word
-  TSTNode* curr = locate_node(word, root, index);
-  
+  std::pair<TSTNode*, unsigned int> node = locate_node(word, root, index);
+  TSTNode* curr = node.first;
+  unsigned int index = node.second;
+
   //start new tree
   if( !root ) {
     root = new TSTNode(word[index]);
@@ -44,6 +46,7 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
       curr = curr->left;
       curr = new TSTNode(word[index]);
     }
+    //word branches to the right
     else {
       curr = curr->right;
       curr = new TSTNode(word[index]);
@@ -63,15 +66,20 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
 }
 
 /* Returns node of char to start inserting a word */
-TSTNode* DictionaryTrie::locate_node(std::string word, TSTNode* curr, 
-	unsigned int i) //const
+std::pair<TSTNode*, unsigned int> DictionaryTrie::locate_node(std::string word, 
+	TSTNode* curr, unsigned int index) const
 {
+  std::pair<TSTNode*, unsigned int> node (curr, index);
 
-  if( !curr ) { //keep?
+  //check if tree exists
+  if( !curr ) { 
     index = 0;
-    return NULL;
+    return node;
   }
+
   index = 0;
+
+  //go through tree checking each letter of word
   while( index < word.length() ) {
     if( curr->letter == word[index] ) {
       if( curr->middle != NULL && index != (word.length()-1) ) {
@@ -79,40 +87,42 @@ TSTNode* DictionaryTrie::locate_node(std::string word, TSTNode* curr,
 	 index++;
       }
       else
-	return curr;
+	return node;
     }
 
     else if( curr->letter > word[index] ) {
       if( curr->left != NULL ) {
         curr = curr-> left;
       }
-      else return curr;
+      else return node;
     }
 
     else {
       if( curr->right != NULL ) {
         curr = curr-> right;
       }
-      else return curr;
+      else return node;
     }
  
   }
-  return curr;
+  return node;
 }
-
-//TSTNode* DictionaryTrie::get_node(
 
 /* Return true if word is in the dictionary, and false otherwise */
 bool DictionaryTrie::find(std::string word) const
 {
  //check if tree exists
- /* if( !root ) {
+  if( !root ) {
     return false;
   } 
   
+  //look for word in the tree
   unsigned int i = 0;
-  TSTNode* curr = locate_node(word, root, i);
+  std::pair<TSTNode*, unsigned int> node = locate_node(word, root, i);
+  TSTNode* curr = node.first;
+  //unsigned int index = node.second;
   
+  //check if the word was completely found
   if( curr->letter == word[word.length()] ) {
     if( curr->finish ) {
      // if( curr->frequency < frequency) {  How to check???
@@ -120,7 +130,7 @@ bool DictionaryTrie::find(std::string word) const
 
     }
   }
-*/
+
   return false;
 }
 

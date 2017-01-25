@@ -79,7 +79,8 @@ private:
   static void deleteAll(TSTNode* n);
 
   /** This is a function to find the first node in a word */
-  TSTNode* locate_node(std::string word, TSTNode* curr, unsigned int i);
+  std::pair<TSTNode*, unsigned int>
+	 locate_node(std::string word, TSTNode* curr, unsigned int i) const;
 };
 
 #endif // DICTIONARY_TRIE_H

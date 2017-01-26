@@ -1,5 +1,6 @@
 #include "util.h"
 #include "DictionaryBST.h"
+#include <set>
 
 /* Create a new Dictionary that uses a BST back end */
 DictionaryBST::DictionaryBST(){}
@@ -28,4 +29,6 @@ bool DictionaryBST::find(std::string word) const
 }
 
 /* Destructor */
-DictionaryBST::~DictionaryBST(){}
+DictionaryBST::~DictionaryBST(){
+	dictionary.clear();
+}

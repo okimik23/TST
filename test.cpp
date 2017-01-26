@@ -98,7 +98,36 @@ int main(int argc, char** argv)
   cout << endl;
 
   
-/*You are supposed to add more test cases in this file */
-  
+  cout << endl << "Finding elements that were just inserted into Dictionaries..." << endl;
+
+  wit = words.begin();
+  wen = words.end();
+  for(; wit != wen; ++wit)
+    {
+      cout << "Finding: \"" << *wit << "\"... ";
+      t_bst = d_bst.find(*wit);
+      t_ht = d_ht.find(*wit);
+      tt = dt.find(*wit);
+      if(!t_bst)
+        {
+          cout << "failed for DictionaryBST... ";
+        }
+      if(!t_ht)
+        {
+          cout << "failed for DictionaryHashset... ";
+        }
+      if(!tt)
+        {
+          cout << "failed for DictionaryTrie... ";
+        }
+      if(t_bst && t_ht && tt)
+        {
+          cout << "PASSED! :D ";
+        }
+      cout << endl;
+    }
+
+  cout << endl;
+
   return 0;
 }

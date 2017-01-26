@@ -1,5 +1,6 @@
 #include "util.h"
 #include "DictionaryHashtable.h"
+#include <unordered_set>
 
 /* Create a new Dictionary that uses a Hashset back end */
 DictionaryHashtable::DictionaryHashtable(){}
@@ -28,4 +29,6 @@ bool DictionaryHashtable::find(std::string word) const
 }
 
 /* Destructor */
-DictionaryHashtable::~DictionaryHashtable(){}
+DictionaryHashtable::~DictionaryHashtable(){
+	
+}

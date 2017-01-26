@@ -10,102 +10,95 @@ DictionaryTrie::DictionaryTrie(){
  * Return true if the word was inserted, and false if it
  * was not (i.e. it was already in the dictionary or it was
  * invalid (empty string) */
-bool DictionaryTrie::insert(std::string word, unsigned int freq)
+
+bool DictionaryTrie::insert(std::string word, unsigned int freq) 
 {
-  //already in dictionary
+  //check if empty string
+  if( word.length() == 0 ) {
+    return false;
+  }
+  //already in tree
   if( find(word) ) {
     return false;
   }
 
-  //empty string
-  if( word.length() == 0 ) {
-    return false;
-  }
-  
-  index = 0; //the char in the word
-  std::pair<TSTNode*, unsigned int> node = locate_node(word, root, index);
-  TSTNode* curr = node.first;
-  unsigned int index = node.second;
+  TSTNode* curr;
+  unsigned int index = 0;
 
-  //start new tree
+  //no root
   if( !root ) {
     root = new TSTNode(word[index]);
     curr = root;
+    ++index;
+    while( index < word.length() ) {
+      curr->middle = new TSTNode(word[index]);
+      curr = curr->middle;
+      index++;
+    }
   }
+
+  else {
+
+    curr = root;
+ 
+    //trie exists
+    while( index < word.length() ) {
+
+      //go middle
+      if( curr->letter == word[index] ) {
+        if( curr->middle ) {
+          curr = curr->middle;
+          ++index;
+        }
+        else {
+          curr->middle = new TSTNode(word[index]);
+          curr = curr->middle;
+          ++index;
+          break;
+        }
+      }
+    
+      //go left
+      else if( curr->letter > word[index] ) {
+        if( curr->left ) {
+          curr = curr->left;
+        }
+        else {
+          curr->left = new TSTNode(word[index]);
+          curr = curr->left;
+          ++index;
+          break;
+        }
+      }
+
+      //go right
+      else { //if( curr->right < word[index] ) 
+        if( curr->right ) {
+          curr = curr->right;
+        }
+        else {
+          curr->right = new TSTNode(word[index]);
+          curr = curr->right;
+          ++index;
+          break;
+        }
+      }
+
+    }
   
-  //check if word is already in trie
-  else if( index == word.length() ) {
-    curr->finish = true;
-    return true;
-  }
-
-  //find node to continue word if not root
-  else if( curr->letter != word[index] ) {
-    //word branches to the left
-    if( curr->letter > word[index] ) {
-      curr = curr->left;
-      curr = new TSTNode(word[index]);
-    }
-    //word branches to the right
-    else {
-      curr = curr->right;
-      curr = new TSTNode(word[index]);
-    }
-    index++;
-  }
-
-  //fill in rest of word in new branch
-  for( ; index < word.length(); index++ ) {
+  //fill in rest of trie
+  while( index < word.length() ) {
+    curr->middle = new TSTNode(word[index]);
     curr = curr->middle;
-    curr = new TSTNode(word[index]);
+    ++index;
   }
-  
+ }
+
   curr->finish = true;
   curr->frequency = freq;
+  
   return true;
-}
 
-/* Returns node of char to start inserting a word */
-std::pair<TSTNode*, unsigned int> DictionaryTrie::locate_node(std::string word, 
-	TSTNode* curr, unsigned int index) const
-{
-  std::pair<TSTNode*, unsigned int> node (curr, index);
-
-  //check if tree exists
-  if( !curr ) { 
-    index = 0;
-    return node;
-  }
-
-  index = 0;
-
-  //go through tree checking each letter of word
-  while( index < word.length() ) {
-    if( curr->letter == word[index] ) {
-      if( curr->middle != NULL && index != (word.length()-1) ) {
-	 curr = curr->middle;
-	 index++;
-      }
-      else
-	return node;
-    }
-
-    else if( curr->letter > word[index] ) {
-      if( curr->left != NULL ) {
-        curr = curr-> left;
-      }
-      else return node;
-    }
-
-    else {
-      if( curr->right != NULL ) {
-        curr = curr-> right;
-      }
-      else return node;
-    }
- 
-  }
-  return node;
 }
 
 /* Return true if word is in the dictionary, and false otherwise */
@@ -117,13 +110,41 @@ bool DictionaryTrie::find(std::string word) const
   } 
   
   //look for word in the tree
-  unsigned int i = 0;
-  std::pair<TSTNode*, unsigned int> node = locate_node(word, root, i);
-  TSTNode* curr = node.first;
-  //unsigned int index = node.second;
-  
+  unsigned int index = 0;
+  TSTNode* curr = root;
+
+  while( index < word.length() ) {
+
+    //go middle
+    if( curr->letter == word[index] ) {
+      if( curr->middle ) {
+        curr = curr->middle;
+        ++index;
+
+      }
+      else break;
+    }
+    
+    //go left
+    else if( curr->letter > word[index] ) {
+      if( curr->left ) {
+        curr = curr->left;
+      }
+      else break;
+    }
+
+    //go right
+    else { //if( curr->right < word[index] ) {
+      if( curr->right ) {
+        curr = curr->right;
+      }
+      else break;
+    }
+
+  }
+
   //check if the word was completely found
-  if( curr->letter == word[word.length()] ) {
+  if( word[index] == word[word.length()-1] ) {
     if( curr->finish ) {
      // if( curr->frequency < frequency) {  How to check???
      return true;
@@ -160,6 +181,7 @@ void DictionaryTrie::deleteAll(TSTNode* n) {
   if( !n) {
     return;
   }
+  
   if( n->left ) {
     deleteAll(n->left);
   }
@@ -169,6 +191,6 @@ void DictionaryTrie::deleteAll(TSTNode* n) {
   if( n->middle ) { 
    deleteAll(n->middle);
   }
-  
+ 
   delete n;
 }

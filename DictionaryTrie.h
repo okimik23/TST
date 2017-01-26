@@ -17,7 +17,6 @@ public:
 	TSTNode* left;
 	TSTNode* middle;
 	TSTNode* right;
-	TSTNode* parent;
 	char letter;
 	int frequency;
 	bool finish;  //if it is the last char in the word
@@ -25,7 +24,7 @@ public:
 	/** Constructor.  Initialize a TSTNode with the given 
  	 *  letter, no parent, no children.
  	 */
-	TSTNode(char l) : left(0), middle(0), right(0), parent(0),
+	TSTNode(char l) : left(0), middle(0), right(0), 
 			letter(l), frequency(0), finish(false) {};
 };
 
@@ -73,14 +72,9 @@ private:
   /** Pointer to the root of this TST, or 0 if the BST is empty */
   TSTNode* root;
 
-  unsigned int index;
-  
   /** This is a helper for the destructor */
   static void deleteAll(TSTNode* n);
 
-  /** This is a function to find the first node in a word */
-  std::pair<TSTNode*, unsigned int>
-	 locate_node(std::string word, TSTNode* curr, unsigned int i) const;
 };
 
 #endif // DICTIONARY_TRIE_H

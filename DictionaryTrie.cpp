@@ -46,7 +46,10 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
 
       //go middle
       if( curr->letter == word[index] ) {
-        if( curr->middle ) {
+        if( index == (word.length()-1) ) {
+          break;
+        }
+        else if( curr->middle ) {
           curr = curr->middle;
           ++index;
         }
@@ -72,7 +75,7 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
       }
 
       //go right
-      else { //if( curr->right < word[index] ) 
+      else {  
         if( curr->right ) {
           curr = curr->right;
         }
@@ -88,6 +91,9 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
   
   //fill in rest of trie
   while( index < word.length() ) {
+    if( index == (word.length()-1) && curr->letter == word[index] ) {
+      break;
+    }
     curr->middle = new TSTNode(word[index]);
     curr = curr->middle;
     ++index;
@@ -117,7 +123,10 @@ bool DictionaryTrie::find(std::string word) const
 
     //go middle
     if( curr->letter == word[index] ) {
-      if( curr->middle ) {
+      if( index == (word.length()-1) ) {
+	break;
+      }
+      else if( curr->middle ) {
         curr = curr->middle;
         ++index;
 
@@ -146,7 +155,6 @@ bool DictionaryTrie::find(std::string word) const
   //check if the word was completely found
   if( word[index] == word[word.length()-1] ) {
     if( curr->finish ) {
-     // if( curr->frequency < frequency) {  How to check???
      return true;
 
     }

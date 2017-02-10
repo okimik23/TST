@@ -284,7 +284,10 @@ std::vector<std::string> DictionaryTrie::predictCompletions(std::string prefix, 
 
   //start BFS
   q.push(curr);
-  TSTNode* nodes[num_completions] = {0};
+  TSTNode* nodes[num_completions];
+  for(unsigned int i=0; i < num_completions; i++ ) {
+    nodes[i] = 0;
+  }
   TSTNode* temp;
   TSTNode* original;
   bool first = true;

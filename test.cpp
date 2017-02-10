@@ -3,6 +3,7 @@
 #include<algorithm>
 #include<set>
 #include<cstdlib>
+#include<fstream>
 #include "util.h"
 #include "DictionaryTrie.h"
 #include "DictionaryBST.h"
@@ -28,14 +29,38 @@ int main(int argc, char** argv)
   DictionaryHashtable d_ht;
   DictionaryTrie dt;
   int t_bst, t_ht, tt;
-
+ 
+ /* 
   words.push_back("harry");
   words.push_back("sriram");
   words.push_back("cse");
   words.push_back("crucio");
   words.push_back("autocomplete");
+  words.push_back("a");
+*/
+
+  words.push_back("basketball");
+  words.push_back("asterisk");
+  words.push_back("basket");
+  words.push_back("application");
+  words.push_back("a");
+  words.push_back("aa");
+  words.push_back("aaa");
+  words.push_back("aa a");
+  words.push_back("app");
+
+  words.push_back("gugglebee");
+  words.push_back("waldos");
+  words.push_back("are you not entertained");
+  words.push_back("never");
+  words.push_back("gonna");
+  words.push_back("give");
+  words.push_back("you");
+  words.push_back("up");
+  words.push_back("never gonna give you up");
+  words.push_back("h k");
   
-  
+
   cout << "Inserting into Dictionaries..." << endl;
 
   wit = words.begin();
@@ -46,7 +71,6 @@ int main(int argc, char** argv)
       t_bst = d_bst.insert(*wit);
       t_ht = d_ht.insert(*wit);
       tt = dt.insert(*wit, 1);
-      //cout << t_bst << " " << t_ht << " "<< tt << "... ";
       if(!t_bst)
 	{
 	  cout << "failed for DictionaryBST... ";
@@ -129,5 +153,38 @@ int main(int argc, char** argv)
 
   cout << endl;
 
+  cout << endl << "Testing predictCompletions..." << endl;
+  cout << "Prefix: g num_completions: 5" << endl;
+  string prefix = "g";
+  unsigned int num_completions = 5;
+  auto completions = dt.predictCompletions(prefix, num_completions);
+  for(auto it = completions.begin(); it != completions.end(); ++it) {
+    cout << *it << endl;
+  }
+  
+  cout << endl << "Prefix: a num_completions: 5" << endl;
+  prefix = "a";
+  num_completions = 5;
+  completions = dt.predictCompletions(prefix, num_completions);
+  for(auto it = completions.begin(); it != completions.end(); ++it) {
+    cout << *it << endl;
+  }
+  
+  cout << endl << "Prefix: n num_completions: 5" << endl;
+  prefix = "n";
+  num_completions = 5;
+  completions = dt.predictCompletions(prefix, num_completions);
+  for(auto it = completions.begin(); it != completions.end(); ++it) {
+    cout << *it << endl;
+  }
+ 
+  cout << endl << "Prefix: h num_completions: 5" << endl;
+  prefix = "h";
+  num_completions = 5;
+  completions = dt.predictCompletions(prefix, num_completions);
+  for(auto it = completions.begin(); it != completions.end(); ++it) {
+    cout << *it << endl;
+  }
+ 
   return 0;
 }

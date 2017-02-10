@@ -1,6 +1,7 @@
 /**
  *  CSE 100 PA3 C++ Autocomplete
  *  Authors: Jor-el Briones, Christine Alvarado
+ *  Student: Kimiko Yamamoto
  */
 
 #ifndef DICTIONARY_BST_H

@@ -1,3 +1,18 @@
+/****************************************************************************
+
+                                                Kimiko Yamamoto
+                                                CSE 100, Winter Quarter
+                                                2/9/17
+                                                A13208241
+                              Assignment 2
+
+File Name:      DictionaryHashTable.cpp
+Description:    DictionaryHashTable creates a dictionary using a hashset.
+                It has functions to insert a new word or to find a word.
+                There is also a default deconstructor.
+
+****************************************************************************/
+
 #include "util.h"
 #include "DictionaryHashtable.h"
 #include <unordered_set>

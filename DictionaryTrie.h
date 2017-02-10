@@ -1,6 +1,7 @@
 /**
  *  CSE 100 PA3 C++ Autocomplete
  *  Authors: Jor-el Briones, Christine Alvarado
+ *  Student: Kimiko Yamamoto
  */
 
 #ifndef DICTIONARY_TRIE_H
@@ -18,14 +19,15 @@ public:
 	TSTNode* middle;
 	TSTNode* right;
 	char letter;
-	int frequency;
+	unsigned int frequency;
 	bool finish;  //if it is the last char in the word
+        std::string s_word;
 
 	/** Constructor.  Initialize a TSTNode with the given 
  	 *  letter, no parent, no children.
  	 */
 	TSTNode(char l) : left(0), middle(0), right(0), 
-			letter(l), frequency(0), finish(false) {};
+			letter(l), frequency(0), finish(false), s_word(""){};
 };
 
 

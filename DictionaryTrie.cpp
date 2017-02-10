@@ -1,5 +1,27 @@
+/****************************************************************************
+
+                                                Kimiko Yamamoto
+                                                CSE 100, Winter Quarter
+                                                2/9/17
+                                                A13208241
+                              Assignment 2
+
+File Name:      DictionaryTrie.cpp
+Description:    DictionaryTrie creates a dictionary using a ternary search trie.
+                It has functions to insert a new word or to find a word.
+                The function predictCompletions can find the most frequent words
+                in the dictionary trie that start with a certain prefix.
+
+****************************************************************************/
+
+
 #include "util.h"
 #include "DictionaryTrie.h"
+#include <queue>
+#include <algorithm>
+#include <string>
+#include<set>
+#include<cstdlib>
 
 /* Create a new Dictionary that uses a Trie back end */
 DictionaryTrie::DictionaryTrie(){
@@ -13,17 +35,20 @@ DictionaryTrie::DictionaryTrie(){
 
 bool DictionaryTrie::insert(std::string word, unsigned int freq) 
 {
+
+  TSTNode* curr;
+  unsigned int index = 0;
+  bool already_there = false;
+
   //check if empty string
   if( word.length() == 0 ) {
     return false;
   }
   //already in tree
   if( find(word) ) {
-    return false;
+    
+    already_there = true;
   }
-
-  TSTNode* curr;
-  unsigned int index = 0;
 
   //no root
   if( !root ) {
@@ -46,15 +71,21 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
 
       //go middle
       if( curr->letter == word[index] ) {
+        //word should be completed
         if( index == (word.length()-1) ) {
+          ++index;
           break;
         }
-        else if( curr->middle ) {
+        //word does not need to branch yet
+        else if( curr->middle && index != (word.length()-1) ) {
           curr = curr->middle;
           ++index;
         }
         else {
-          curr->middle = new TSTNode(word[index]);
+          //word is inserted in the middle node
+          if( !already_there && index != (word.length()-1) ) {
+            curr->middle = new TSTNode(word[++index]);
+          }
           curr = curr->middle;
           ++index;
           break;
@@ -67,7 +98,10 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
           curr = curr->left;
         }
         else {
-          curr->left = new TSTNode(word[index]);
+          //word creates new branch at letter
+          if( !already_there ) {
+            curr->left = new TSTNode(word[index]);
+          }
           curr = curr->left;
           ++index;
           break;
@@ -75,12 +109,15 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
       }
 
       //go right
-      else {  
+      else if( curr->letter < word[index] ) {  
         if( curr->right ) {
           curr = curr->right;
         }
-        else {
-          curr->right = new TSTNode(word[index]);
+        else { 
+          //word creates new branch at letter
+          if( !already_there ) {
+            curr->right = new TSTNode(word[index]);
+          }
           curr = curr->right;
           ++index;
           break;
@@ -88,21 +125,33 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
       }
 
     }
-  
-  //fill in rest of trie
-  while( index < word.length() ) {
-    if( index == (word.length()-1) && curr->letter == word[index] ) {
-      break;
-    }
-    curr->middle = new TSTNode(word[index]);
-    curr = curr->middle;
-    ++index;
-  }
- }
 
+    //fill in rest of trie
+    while( index < word.length() && !already_there ) {
+     
+      if( curr && index == (word.length()) && curr->letter == word[index] ) {
+        break;
+      }
+      if( !already_there ) {
+        curr->middle = new TSTNode(word[index]);
+      }
+      curr = curr->middle;
+      ++index;
+    }
+  }
+
+  //duplicate word so check for larger frequency
+  if( already_there ) {
+    if( freq > curr->frequency ) {
+      curr->frequency = freq;
+    }
+    return false;
+  }
+  
   curr->finish = true;
   curr->frequency = freq;
-  
+  curr->s_word = word;
+
   return true;
 
 }
@@ -124,14 +173,13 @@ bool DictionaryTrie::find(std::string word) const
     //go middle
     if( curr->letter == word[index] ) {
       if( index == (word.length()-1) ) {
-	break;
+        return curr->finish;
       }
-      else if( curr->middle ) {
+      if( curr->middle){
         curr = curr->middle;
         ++index;
-
       }
-      else break;
+     else return false;
     }
     
     //go left
@@ -139,26 +187,24 @@ bool DictionaryTrie::find(std::string word) const
       if( curr->left ) {
         curr = curr->left;
       }
-      else break;
+      else return false;
     }
 
     //go right
-    else { //if( curr->right < word[index] ) {
+    else  if ( curr->letter < word[index] ) {
       if( curr->right ) {
         curr = curr->right;
       }
-      else break;
+      else return false;
     }
 
   }
-
-  //check if the word was completely found
-  if( word[index] == word[word.length()-1] ) {
+    
+    //check if the word was inserted
     if( curr->finish ) {
      return true;
 
     }
-  }
 
   return false;
 }
@@ -176,6 +222,120 @@ bool DictionaryTrie::find(std::string word) const
 std::vector<std::string> DictionaryTrie::predictCompletions(std::string prefix, unsigned int num_completions)
 {
   std::vector<std::string> words;
+  std::queue<TSTNode*> q;
+
+  //empty prefix returns empty string
+  if( prefix == "" ) {
+    return words;
+  }
+  
+  if( num_completions <= 0 ) {
+    return words;
+  }
+
+  //check if tree exists
+  if( !root ) {
+    return words;
+  }
+
+  //look for prefix in the tree, same as find
+  unsigned int index = 0;
+  TSTNode* curr = root;
+
+  while( index < prefix.length() ) {
+
+    //go middle
+    if( curr->letter == prefix[index] ) {
+      if( index == (prefix.length()-1) ) {
+	break;
+      }
+      else if( curr->middle ) {
+        curr = curr->middle;
+        ++index;
+
+      }
+      else break;
+    }
+    
+    //go left
+    else if( curr->letter > prefix[index] ) {
+      if( curr->left ) {
+        curr = curr->left;
+      }
+      else break;
+    }
+
+    //go right
+    else if( curr->letter < prefix[index] ) {
+      if( curr->right ) {
+        curr = curr->right;
+      }
+      else break;
+    }
+
+  }
+
+  //prefix not in dictionary
+  if( curr->letter != prefix[index] ) {
+    std::cout << "Invalid Input. Please retry with correct input" 
+      << std::endl;
+    return words;
+  }
+
+  //start BFS
+  q.push(curr);
+  TSTNode* nodes[num_completions] = {0};
+  TSTNode* temp;
+  TSTNode* original;
+  bool first = true;
+  // fill in queue
+  while( !q.empty() ) {
+    curr = q.front();
+    q.pop();
+    
+    //visit node
+    if( curr->finish ) { 
+      temp = curr;
+      original = curr;
+      for(unsigned int i=0; i < num_completions; ++i)
+      {
+        if( nodes[i] == 0 ) {
+	  nodes[i] = curr;
+          break;
+        }
+
+        else if( nodes[i]->frequency < curr->frequency ) {
+  	  temp = nodes[i];
+          nodes[i] = curr;
+          curr = temp;
+        }
+      }
+        curr = original;
+      }
+    
+    //add nodes to queue
+    if( curr->middle != NULL ) {
+      q.push(curr->middle);
+    }
+    if( !first ) {
+      if( curr->left != NULL ) {
+        q.push(curr->left);
+      }
+    
+      if( curr->right != NULL ) {
+        q.push(curr->right);
+      }
+    }
+    first = false;
+
+  }
+
+  for(unsigned int j = 0; j < num_completions; ++j ) {
+    if( nodes[j] != 0 ) {
+      words.push_back(nodes[j]->s_word);
+    }
+  }
+
   return words;
 }
 

@@ -20,8 +20,9 @@ Description:    DictionaryTrie creates a dictionary using a ternary search trie.
 #include <queue>
 #include <algorithm>
 #include <string>
-#include<set>
-#include<cstdlib>
+#include <set>
+#include <cstdlib>
+#include <iostream>
 
 /* Create a new Dictionary that uses a Trie back end */
 DictionaryTrie::DictionaryTrie(){
@@ -36,7 +37,6 @@ DictionaryTrie::DictionaryTrie(){
 bool DictionaryTrie::insert(std::string word, unsigned int freq) 
 {
 
-  TSTNode* curr;
   unsigned int index = 0;
   bool already_there = false;
 
@@ -46,114 +46,67 @@ bool DictionaryTrie::insert(std::string word, unsigned int freq)
   }
   //already in tree
   if( find(word) ) {
-    
     already_there = true;
   }
 
   //no root
   if( !root ) {
     root = new TSTNode(word[index]);
-    curr = root;
-    ++index;
-    while( index < word.length() ) {
-      curr->middle = new TSTNode(word[index]);
-      curr = curr->middle;
-      index++;
-    }
-  }
-
-  else {
-
-    curr = root;
- 
-    //trie exists
-    while( index < word.length() ) {
-
-      //go middle
-      if( curr->letter == word[index] ) {
-        //word should be completed
-        if( index == (word.length()-1) ) {
-          ++index;
-          break;
-        }
-        //word does not need to branch yet
-        else if( curr->middle && index != (word.length()-1) ) {
-          curr = curr->middle;
-          ++index;
-        }
-        else {
-          //word is inserted in the middle node
-          if( !already_there && index != (word.length()-1) ) {
-            curr->middle = new TSTNode(word[++index]);
-          }
-          curr = curr->middle;
-          ++index;
-          break;
-        }
-      }
-    
-      //go left
-      else if( curr->letter > word[index] ) {
-        if( curr->left ) {
-          curr = curr->left;
-        }
-        else {
-          //word creates new branch at letter
-          if( !already_there ) {
-            curr->left = new TSTNode(word[index]);
-          }
-          curr = curr->left;
-          ++index;
-          break;
-        }
-      }
-
-      //go right
-      else if( curr->letter < word[index] ) {  
-        if( curr->right ) {
-          curr = curr->right;
-        }
-        else { 
-          //word creates new branch at letter
-          if( !already_there ) {
-            curr->right = new TSTNode(word[index]);
-          }
-          curr = curr->right;
-          ++index;
-          break;
-        }
-      }
-
-    }
-
-    //fill in rest of trie
-    while( index < word.length() && !already_there ) {
-     
-      if( curr && index == (word.length()) && curr->letter == word[index] ) {
-        break;
-      }
-      if( !already_there ) {
-        curr->middle = new TSTNode(word[index]);
-      }
-      curr = curr->middle;
-      ++index;
-    }
-  }
-
-  //duplicate word so check for larger frequency
-  if( already_there ) {
-    if( freq > curr->frequency ) {
-      curr->frequency = freq;
-    }
-    return false;
   }
   
-  curr->finish = true;
-  curr->frequency = freq;
-  curr->s_word = word;
+  root = insert_help( root, word, index, already_there, freq );
+
+  if( already_there ) {
+    return false;
+  }
 
   return true;
 
+}
+
+/* helper function for insert */
+TSTNode* DictionaryTrie::insert_help( TSTNode* r, std::string word, unsigned int index, bool already_there, int freq ) {
+
+  if( !r ) {
+    if( already_there ) {
+      return r;
+    }
+    r = new TSTNode(word[index]);
+  }
+
+  if( word[index] < r->letter ) {
+    r->left = insert_help( r->left, word, index, already_there, freq);
+  }
+  else if( word[index] > r->letter ) {
+    r->right = insert_help( r->right, word, index, already_there, freq );
+  }
+  else {
+    if( index < word.length()-1 ) {
+      r->middle = insert_help( r->middle, word, index+1, already_there, freq );
+    }
+    else {
+      r->finish = true;
+      r->frequency = freq;
+      r->s_word = word;
+    }
+  }
+  return r;
+}
+
+TSTNode* DictionaryTrie::find_help(TSTNode* curr, std::string word, unsigned int index ) const{
+  if( !curr ) {
+    return NULL;
+  }
+  if( curr->letter > word[index] ) {
+    return find_help(curr->left, word, index);
+  }
+  if( curr->letter < word[index] ) {
+    return find_help(curr->right, word, index);
+  }
+  if( index < word.length()-1 ) {
+    return find_help(curr->middle, word, index+1);
+  }
+  return curr;
 }
 
 /* Return true if word is in the dictionary, and false otherwise */
@@ -163,50 +116,10 @@ bool DictionaryTrie::find(std::string word) const
   if( !root ) {
     return false;
   } 
-  
-  //look for word in the tree
   unsigned int index = 0;
-  TSTNode* curr = root;
+  TSTNode* curr = find_help(root, word, index);
 
-  while( index < word.length() ) {
-
-    //go middle
-    if( curr->letter == word[index] ) {
-      if( index == (word.length()-1) ) {
-        return curr->finish;
-      }
-      if( curr->middle){
-        curr = curr->middle;
-        ++index;
-      }
-     else return false;
-    }
-    
-    //go left
-    else if( curr->letter > word[index] ) {
-      if( curr->left ) {
-        curr = curr->left;
-      }
-      else return false;
-    }
-
-    //go right
-    else  if ( curr->letter < word[index] ) {
-      if( curr->right ) {
-        curr = curr->right;
-      }
-      else return false;
-    }
-
-  }
-    
-    //check if the word was inserted
-    if( curr->finish ) {
-     return true;
-
-    }
-
-  return false;
+  return curr && curr->finish;
 }
 
 /* Return up to num_completions of the most frequent completions
@@ -242,38 +155,7 @@ std::vector<std::string> DictionaryTrie::predictCompletions(std::string prefix, 
   unsigned int index = 0;
   TSTNode* curr = root;
 
-  while( index < prefix.length() ) {
-
-    //go middle
-    if( curr->letter == prefix[index] ) {
-      if( index == (prefix.length()-1) ) {
-	break;
-      }
-      else if( curr->middle ) {
-        curr = curr->middle;
-        ++index;
-
-      }
-      else break;
-    }
-    
-    //go left
-    else if( curr->letter > prefix[index] ) {
-      if( curr->left ) {
-        curr = curr->left;
-      }
-      else break;
-    }
-
-    //go right
-    else if( curr->letter < prefix[index] ) {
-      if( curr->right ) {
-        curr = curr->right;
-      }
-      else break;
-    }
-
-  }
+  curr = find_help(root, prefix, index);
 
   //prefix not in dictionary
   if( curr->letter != prefix[index] ) {
@@ -365,3 +247,5 @@ void DictionaryTrie::deleteAll(TSTNode* n) {
  
   delete n;
 }
+
+

@@ -50,6 +50,12 @@ public:
    * invalid (empty string) */
   bool insert(std::string word, unsigned int freq);
 
+  /** Helper function for insert */
+  TSTNode* insert_help( TSTNode* r, std::string word, unsigned int index, bool already_there, int freq );
+
+  /** Helper function for find */
+  TSTNode* find_help( TSTNode* curr, std::string word, unsigned int index) const;  
+
   /* Return true if word is in the dictionary, and false otherwise */
   bool find(std::string word) const;
 
